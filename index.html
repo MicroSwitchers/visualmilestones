@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Milestone Tracker</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #215b95;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 20px;
+            padding: 20px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="number"], input[list], input[type="text"] {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            width: 100%;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        button[type="button"] {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .age-info, .milestones {
+            margin-top: 30px;
+        }
+
+        .milestones h2 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .milestones h3 {
+            color: #555;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .milestones ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .milestones li {
+            margin-bottom: 5px;
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #4CAF50;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 10px;
+                margin: 10px;
+            }
+
+            input[type="number"], input[list], input[type="text"], button[type="button"] {
+                font-size: 14px;
+            }
+
+            .milestones li {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Visual Milestones Tracker</h1>
+        <div class="form-group">
+            <label for="yearInput">Enter Birth Year:</label>
+            <input type="number" id="yearInput" placeholder="YYYY (Year)" min="1900" max="2100">
+        </div>
+        <div class="form-group">
+            <label for="monthInput">Enter Birth Month:</label>
+            <input list="months" id="monthInput" placeholder="# or MMM (Month)" onchange="validateMonthInput()">
+            <datalist id="months">
+                <option value="01 - Jan">
+                <option value="02 - Feb">
+                <option value="03 - Mar">
+                <option value="04 - Apr">
+                <option value="05 - May">
+                <option value="06 - Jun">
+                <option value="07 - Jul">
+                <option value="08 - Aug">
+                <option value="09 - Sep">
+                <option value="10 - Oct">
+                <option value="11 - Nov">
+                <option value="12 - Dec">
+            </datalist>
+        </div>
+        <div class="form-group">
+            <label for="dayInput">Enter Birth Day:</label>
+            <input type="text" id="dayInput" placeholder="DD (Day)" maxlength="2" onchange="validateDayInput()">
+        </div>
+        <button type="button" onclick="calculateAge()">Calculate Age</button>
+        <div class="age-info" id="ageInfo">
+            <!-- Age information will be displayed here -->
+        </div>
+        <div class="milestones" id="milestones">
+            <!-- Milestones will be displayed here -->
+        </div>
+    </div>
+
+    <script>
+        const milestonesByAge = {
+            "0-1": [
+                "Focuses on faces",
+                "Follows moving objects with eyes",
+                "Blinks at bright lights",
+                "Prefers black-and-white or high-contrast patterns",
+                "Starts to make eye contact",
+                "Sees objects 8-12 inches away",
+                "Begins to track objects with eyes"
+            ],
+            "2-3": [
+                "Begins to track objects with eyes",
+                "Starts to reach for things",
+                "Recognizes familiar faces",
+                "Begins to follow moving objects",
+                "Looks at bright objects",
+                "Turns head towards light sources",
+                "Shows preference for certain colors"
+            ],
+            "4-5": [
+                "Recognizes familiar faces and objects at a distance",
+                "Eyes move together in all directions",
+                "Shows interest in bright colors and objects",
+                "Reaches out to grasp objects",
+                "Looks at own hands",
+                "Turns head to follow a moving object",
+                "Shows increased eye contact"
+            ],
+            "6-7": [
+                "Begins to use hands and eyes in coordination",
+                "Shows interest in colorful objects and begins to reach for them",
+                "Tracks moving objects more accurately",
+                "Recognizes faces at a distance",
+                "Watches more intently",
+                "Begins to develop depth perception",
+                "Shows preference for complex patterns"
+            ],
+            "8-9": [
+                "Improves in tracking moving objects",
+                "Turns head to follow a moving object",
+                "Begins to understand object permanence",
+                "Recognizes familiar objects and pictures in books",
+                "Shows interest in small objects and details",
+                "Looks for dropped objects",
+                "Begins to develop hand-eye coordination"
+            ],
+            "10-12": [
+                "Watches objects as they fall",
+                "Recognizes familiar objects and pictures in books",
+                "Looks at small objects and pictures",
+                "Begins to use eyes to coordinate hand movements",
+                "Enjoys playing peek-a-boo",
+                "Shows interest in exploring environment visually",
+                "Begins to show visual memory"
+            ],
+            "13-18": [
+                "Points to objects or pictures when they are named",
+                "Can see small objects and pick them up",
+                "Recognizes and identifies familiar objects",
+                "Shows interest in looking at books",
+                "Enjoys pictures and can point to them",
+                "Begins to imitate gestures",
+                "Develops better hand-eye coordination"
+            ],
+            "19-24": [
+                "Begins to scribble with crayons",
+                "Can match shapes and colors",
+                "Recognizes self in mirror",
+                "Enjoys looking at picture books",
+                "Shows interest in colors and shapes",
+                "Can follow simple visual instructions",
+                "Begins to sort objects by shape and color"
+            ],
+            "25-30": [
+                "Shows interest in looking at books and pictures",
+                "Recognizes and identifies familiar objects in books",
+                "Begins to notice fine details in pictures",
+                "Uses vision to guide reaching and grasping objects",
+                "Begins to draw simple shapes",
+                "Can follow more complex movements visually",
+                "Starts to develop spatial awareness"
+            ],
+            "31-36": [
+                "Begins to notice fine details in pictures",
+                "Uses vision to guide reaching and grasping objects",
+                "Can identify shapes and colors",
+                "Shows interest in more detailed pictures",
+                "Enjoys playing with puzzles",
+                "Recognizes letters and numbers",
+                "Shows improved hand-eye coordination"
+            ],
+            "37-48": [
+                "Can follow more complex movements visually",
+                "Recognizes letters and numbers",
+                "Starts to draw simple shapes",
+                "Shows interest in learning to write",
+                "Can complete simple puzzles",
+                "Enjoys detailed picture books",
+                "Develops better visual tracking skills"
+            ]
+        };
+
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+        document.getElementById('yearInput').addEventListener('input', function() {
+            if (this.value.length === 4) {
+                document.getElementById('monthInput').focus();
+            }
+        });
+
+        function validateMonthInput() {
+            let input = document.getElementById('monthInput').value.toLowerCase();
+            let monthNumber = input.match(/^(\d{1,2})/); // Matches one or two digits
+            if (monthNumber) {
+                let monthIndex = parseInt(monthNumber[1], 10) - 1;
+                if (monthIndex >= 0 && monthIndex < 12) {
+                    document.getElementById('monthInput').value = monthNumber[1].padStart(2, '0') + ' - ' + monthNames[monthIndex]; // Sets input to "## - MMM" format
+                }
+            } else {
+                // Check if the input is an abbreviated month name
+                let monthName = getMonthName(input.slice(0, 3));
+                if (monthName) {
+                    document.getElementById('monthInput').value = getMonthNumber(monthName) + ' - ' + monthName; // Sets input to "## - MMM" format
+                }
+            }
+            document.getElementById('dayInput').focus();
+        }
+
+        function validateDayInput() {
+            let input = document.getElementById('dayInput').value;
+            if (input.length === 1) {
+                document.getElementById('dayInput').value = '0' + input; // Add leading zero for single-digit input
+            }
+        }
+
+        function getMonthName(input) {
+            const monthNamesLower = monthNames.map(name => name.toLowerCase());
+            const index = monthNamesLower.indexOf(input);
+            return index !== -1 ? monthNames[index] : null;
+        }
+
+        function getMonthNumber(monthName) {
+            const index = monthNames.indexOf(monthName);
+            return (index + 1).toString().padStart(2, '0');
+        }
+
+        function calculateAge() {
+            var year = document.getElementById('yearInput').value;
+            var monthInput = document.getElementById('monthInput').value.split(' - ');
+            var month = parseInt(monthInput[0], 10) - 1; // Months are 0-indexed in JavaScript
+            var day = document.getElementById('dayInput').value;
+            var birthday = new Date(year, month, day);
+            var today = new Date();
+            if (birthday > today || isNaN(birthday)) {
+                document.getElementById('ageInfo').innerText = 'Please enter a valid birthday';
+                return;
+            }
+
+            var ageMonths = calculateAgeInMonths(birthday, today);
+            var ageYears = Math.floor(ageMonths / 12);
+            var remainingMonths = ageMonths % 12;
+
+            document.getElementById('ageInfo').innerHTML = `
+                <h2>Child's Age</h2>
+                <p>${ageYears} years and ${remainingMonths} month(s) (${ageMonths} months)</p>
+            `;
+
+            displayMilestones(ageMonths);
+        }
+
+        function calculateAgeInMonths(birthday, today) {
+            var months = (today.getFullYear() - birthday.getFullYear()) * 12;
+            months -= birthday.getMonth();
+            months += today.getMonth();
+            if (today.getDate() < birthday.getDate()) {
+                months--;
+            }
+            return months;
+        }
+
+        function displayMilestones(ageInMonths) {
+            const milestonesDiv = document.getElementById('milestones');
+            milestonesDiv.innerHTML = '';
+
+            const currentMilestones = getMilestonesForAge(ageInMonths);
+            const previousMilestones = getPreviousMilestonesForAge(ageInMonths);
+
+            if (currentMilestones) {
+                milestonesDiv.innerHTML += `
+                    <h2>Current Age</h2>
+                    <h3>${currentMilestones.ageRange} months</h3>
+                    <ul>${currentMilestones.milestones}</ul>
+                `;
+            }
+
+            if (previousMilestones) {
+                milestonesDiv.innerHTML += `
+                    <h2>Previous Age Range</h2>
+                    <h3>${previousMilestones.ageRange} months</h3>
+                    <ul>${previousMilestones.milestones}</ul>
+                `;
+            }
+        }
+
+        function getMilestonesForAge(ageInMonths) {
+            for (const [ageRange, milestones] of Object.entries(milestonesByAge)) {
+                const [start, end] = ageRange.split('-').map(Number);
+                if (ageInMonths >= start && ageInMonths <= end) {
+                    return {
+                        ageRange: ageRange,
+                        milestones: milestones.map(milestone => `<li>${milestone}</li>`).join('')
+                    };
+                }
+            }
+            return null;
+        }
+
+        function getPreviousMilestonesForAge(ageInMonths) {
+            let previousAgeRange = null;
+            for (const [ageRange, milestones] of Object.entries(milestonesByAge)) {
+                const [start, end] = ageRange.split('-').map(Number);
+                if (ageInMonths > end) {
+                    previousAgeRange = {
+                        ageRange: ageRange,
+                        milestones: milestones.map(milestone => `<li>${milestone}</li>`).join('')
+                    };
+                } else if (ageInMonths <= end) {
+                    break;
+                }
+            }
+            return previousAgeRange;
+        }
+    </script>
+</body>
+</html>
